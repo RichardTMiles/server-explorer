@@ -27,14 +27,8 @@ spec:
               value: "3000"
             - name: PROBES_ENABLED
               value: "false"
-            - name: TOPOLOGY_FILE
-              value: /config/topology.json
             - name: FRAME_ANCESTORS
               value: "'self' https://spiders.assessorly.com https://spiders-staging.assessorly.com https://local.assessorly.com"
-          volumeMounts:
-            - name: topology
-              mountPath: /config
-              readOnly: true
           readinessProbe:
             httpGet:
               path: /v1/healthz
@@ -47,8 +41,3 @@ spec:
               port: http
             initialDelaySeconds: 20
             periodSeconds: 20
-      volumes:
-        - name: topology
-          configMap:
-            name: server-explorer-topology
-            optional: true
