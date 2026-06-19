@@ -4,10 +4,10 @@ Standalone rack and server topology explorer for internal infrastructure. It is 
 
 ## What It Does
 
-- Renders a 42U rack view with servers, switches, storage, UPS, and out-of-rack upstream nodes.
-- Draws color-coded links for network, management, storage, power, and KVM paths.
+- Renders the current one-switch/four-server rack by default: ProCurve 2810-24G, `r640`, `r510b`, `r510a`, and `r710`.
+- Draws color-coded links for the configured physical/server paths.
 - Provides search, status/category filters, a details inspector, and a compact event/alert feed.
-- Loads topology from a private JSON file at runtime with a safe sample topology as fallback.
+- Loads topology from a private JSON file at runtime; without one it falls back to the current rack inventory.
 - Optionally runs simple HTTP/TCP reachability probes for configured targets.
 - Sets a `frame-ancestors` content security policy so the app can be embedded in Spiders.
 
@@ -41,27 +41,28 @@ FRAME_ANCESTORS="'self' https://spiders.assessorly.com https://local.assessorly.
 
 ```json
 {
-  "title": "Server Type-A Config & Connectivity",
-  "site": "Lab Rack",
-  "rack": { "label": "42U Server Rack", "units": 42 },
+  "title": "Miles Rack Server Explorer",
+  "site": "Harvester rack",
+  "rack": { "label": "One switch / four server rack", "units": 42 },
   "devices": [
     {
-      "id": "r640-01",
-      "label": "Compute 01",
+      "id": "r640",
+      "label": "r640",
       "category": "compute",
       "status": "online",
-      "rackUnit": 28,
-      "rackHeight": 2,
+      "rackUnit": 34,
+      "rackHeight": 1,
       "model": "Dell PowerEdge R640",
-      "ports": [{ "id": "mgmt", "label": "iDRAC", "kind": "management" }]
+      "ip": "192.168.1.100",
+      "ports": [{ "id": "lan", "label": "LAN / switch port 19", "kind": "network" }]
     }
   ],
   "links": [
     {
-      "id": "mgmt-01",
-      "kind": "management",
-      "from": { "deviceId": "mgmt-switch" },
-      "to": { "deviceId": "r640-01", "portId": "mgmt" }
+      "id": "switch-r640",
+      "kind": "network",
+      "from": { "deviceId": "procurve-2810", "portId": "port-19" },
+      "to": { "deviceId": "r640", "portId": "lan" }
     }
   ]
 }
@@ -84,7 +85,7 @@ docker buildx build --platform linux/amd64 -t ghcr.io/richardtmiles/server-explo
 ## Kubernetes
 
 The checked-in manifests deploy a single pod and expose it internally through NodePort `30094`.
-They also define nginx ingress for `explorer.miles.systems` with TLS from cert-manager. `server-explorer.miles.systems` is kept as a compatibility alias. Private/LAN source ranges can open the app without a prompt; other source ranges must pass nginx Basic Auth through the `server-explorer-basic-auth` secret.
+They also define nginx ingress for `explorer.miles.systems` with TLS from cert-manager. `server-explorer.miles.systems` is kept as a compatibility alias. Private/LAN source ranges can open the app without a prompt; other source ranges must pass nginx Basic Auth through the `server-explorer-basic-auth` secret. The default deployment enables probes only for explicitly configured devices in the topology.
 
 ```sh
 kubectl apply -k k8s

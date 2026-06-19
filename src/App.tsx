@@ -190,6 +190,8 @@ function Filters(props: {
   setStatuses: (value: Set<DeviceStatus>) => void;
   categories: Set<DeviceCategory>;
   setCategories: (value: Set<DeviceCategory>) => void;
+  availableStatuses: DeviceStatus[];
+  availableCategories: DeviceCategory[];
 }) {
   const toggleStatus = (status: DeviceStatus) => {
     const next = new Set(props.statuses);
@@ -217,7 +219,7 @@ function Filters(props: {
       </div>
       <div className="filter-group">
         <Filter size={15} />
-        {(Object.keys(STATUS_LABEL) as DeviceStatus[]).map((status) => (
+        {props.availableStatuses.map((status) => (
           <FilterToggle
             key={status}
             value={status}
@@ -228,7 +230,7 @@ function Filters(props: {
         ))}
       </div>
       <div className="filter-group category-group">
-        {(Object.keys(CATEGORY_LABEL) as DeviceCategory[]).map((category) => (
+        {props.availableCategories.map((category) => (
           <FilterToggle
             key={category}
             value={category}
@@ -332,6 +334,9 @@ function RackView(props: {
     .filter((device) => !isRackDevice(device))
     .filter((device) => visibleDeviceIds.has(device.id));
   const units = props.topology.rack.units;
+  const linkKinds = (Object.keys(LINK_LABEL) as LinkKind[]).filter((kind) =>
+    props.topology.links.some((link) => link.kind === kind)
+  );
 
   return (
     <section className="topology-stage" aria-label="Rack topology">
@@ -391,12 +396,16 @@ function RackView(props: {
 
       <div className="legend-panel">
         <h2>Legend</h2>
-        {(Object.keys(LINK_LABEL) as LinkKind[]).map((kind) => (
-          <div key={kind} className="legend-row">
-            <span className={`legend-line cable-${kind}`} />
-            <span>{LINK_LABEL[kind]}</span>
-          </div>
-        ))}
+        {linkKinds.length === 0 ? (
+          <p className="muted">No cable links configured.</p>
+        ) : (
+          linkKinds.map((kind) => (
+            <div key={kind} className="legend-row">
+              <span className={`legend-line cable-${kind}`} />
+              <span>{LINK_LABEL[kind]}</span>
+            </div>
+          ))
+        )}
       </div>
     </section>
   );
@@ -635,6 +644,16 @@ export function App() {
       .sort((a, b) => statusRank[a.status] - statusRank[b.status] || a.label.localeCompare(b.label));
   }, [categories, search, statuses, topology]);
 
+  const availableStatuses = React.useMemo(() => {
+    const present = new Set((topology?.devices ?? []).map((device) => device.status));
+    return (Object.keys(STATUS_LABEL) as DeviceStatus[]).filter((status) => present.has(status));
+  }, [topology]);
+
+  const availableCategories = React.useMemo(() => {
+    const present = new Set((topology?.devices ?? []).map((device) => device.category));
+    return (Object.keys(CATEGORY_LABEL) as DeviceCategory[]).filter((category) => present.has(category));
+  }, [topology]);
+
   const selectedDevice = topology?.devices.find((device) => device.id === selectedDeviceId);
 
   const runProbe = async (deviceId: string) => {
@@ -663,6 +682,10 @@ export function App() {
         setStatuses={setStatuses}
         categories={categories}
         setCategories={setCategories}
+        availableStatuses={availableStatuses.length ? availableStatuses : (Object.keys(STATUS_LABEL) as DeviceStatus[])}
+        availableCategories={
+          availableCategories.length ? availableCategories : (Object.keys(CATEGORY_LABEL) as DeviceCategory[])
+        }
       />
 
       {topology ? (
