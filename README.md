@@ -84,7 +84,7 @@ docker buildx build --platform linux/amd64 -t ghcr.io/richardtmiles/server-explo
 ## Kubernetes
 
 The checked-in manifests deploy a single pod and expose it internally through NodePort `30094`.
-They also define nginx ingress for `server-explorer.miles.systems` with TLS from cert-manager. Private/LAN source ranges can open the app without a prompt; other source ranges must pass nginx Basic Auth through the `server-explorer-basic-auth` secret.
+They also define nginx ingress for `explorer.miles.systems` with TLS from cert-manager. `server-explorer.miles.systems` is kept as a compatibility alias. Private/LAN source ranges can open the app without a prompt; other source ranges must pass nginx Basic Auth through the `server-explorer-basic-auth` secret.
 
 ```sh
 kubectl apply -k k8s
