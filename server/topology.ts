@@ -135,7 +135,7 @@ const currentRackTopology: Topology = topologySchema.parse({
       tags: ["switch", "snmp", "procurve"],
       metrics: [
         { label: "Ports up", value: "9 / 24", tone: "good" },
-        { label: "Mapped servers", value: "3 / 4", tone: "warning" },
+        { label: "Mapped servers", value: "4 / 4", tone: "good" },
         { label: "VLANs", value: "1", tone: "neutral" },
         { label: "LLDP neighbors", value: "0", tone: "neutral" },
       ],
@@ -148,8 +148,7 @@ const currentRackTopology: Topology = topologySchema.parse({
         { id: "port-21", label: "Port 21 / active / no learned MAC", kind: "network", status: "unknown" },
         { id: "port-22", label: "Port 22 / r510b / 78:2b:cb:2d:bb:a1", kind: "network", status: "online" },
         { id: "port-23", label: "Port 23 / r710 / d4:ae:52:73:e8:af", kind: "network", status: "online" },
-        { id: "port-24", label: "Port 24 / active 100M / no learned MAC", kind: "network", status: "unknown" },
-        { id: "r510a-unlearned", label: "r510a switch port not learned", kind: "network", status: "offline" },
+        { id: "port-24", label: "Port 24 / r510a / 78:2b:cb:03:6a:e8", kind: "network", status: "online" },
       ],
     },
     {
@@ -202,24 +201,23 @@ const currentRackTopology: Topology = topologySchema.parse({
       id: "r510a",
       label: "r510a",
       category: "compute",
-      status: "offline",
+      status: "online",
       rackUnit: 26,
       rackHeight: 2,
       vendor: "Dell",
       model: "PowerEdge R510",
       role: "Harvester control-plane node",
       ip: "192.168.1.101",
-      summary:
-        "Kubernetes reports NodeStatusUnknown and SSH/ping checks did not complete. Local ARP had fe:07:c6:32:b3:ac, but the ProCurve MAC table did not learn that MAC on any port.",
+      summary: "Kubernetes node is Ready. ARP MAC 78:2b:cb:03:6a:e8 is learned on ProCurve port 24.",
       probe: { kind: "tcp", host: "192.168.1.101", port: 22 },
-      tags: ["harvester", "control-plane", "not-ready"],
+      tags: ["harvester", "control-plane", "ready"],
       ports: [
-        { id: "lan", label: "LAN / 192.168.1.101 / switch port not learned", kind: "network", status: "offline" },
+        { id: "lan", label: "LAN / 192.168.1.101 / switch port 24", kind: "network", status: "online" },
       ],
       metrics: [
-        { label: "Node", value: "NotReady", tone: "danger" },
-        { label: "Switch port", value: "not learned", tone: "warning" },
-        { label: "Last ARP", value: "fe:07:c6:32:b3:ac", tone: "neutral" },
+        { label: "Node", value: "Ready", tone: "good" },
+        { label: "Switch port", value: "24", tone: "good" },
+        { label: "MAC", value: "78:2b:cb:03:6a:e8", tone: "neutral" },
       ],
     },
     {
@@ -264,8 +262,8 @@ const currentRackTopology: Topology = topologySchema.parse({
     {
       id: "switch-r510a",
       kind: "network",
-      status: "offline",
-      from: { deviceId: "procurve-2810", portId: "r510a-unlearned" },
+      status: "online",
+      from: { deviceId: "procurve-2810", portId: "port-24" },
       to: { deviceId: "r510a", portId: "lan" },
     },
     {
@@ -276,15 +274,7 @@ const currentRackTopology: Topology = topologySchema.parse({
       to: { deviceId: "r710", portId: "lan" },
     },
   ],
-  alerts: [
-    {
-      id: "r510a-not-ready",
-      severity: "warning",
-      title: "r510a is not currently reachable",
-      detail: "Cluster Ready condition is Unknown and the switch has no learned MAC for the last observed ARP address.",
-      deviceId: "r510a",
-    },
-  ],
+  alerts: [],
 });
 
 export async function loadTopology(topologyFile?: string): Promise<Topology> {
