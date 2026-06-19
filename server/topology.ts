@@ -227,7 +227,7 @@ const currentRackTopology: Topology = topologySchema.parse({
       label: "r710",
       category: "compute",
       status: "online",
-      rackUnit: 21,
+      rackUnit: 24,
       rackHeight: 2,
       vendor: "Dell",
       model: "PowerEdge R710",
