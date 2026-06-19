@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server-explorer-miles-systems-tls
+  namespace: server-explorer
+spec:
+  secretName: server-explorer-miles-systems-tls
+  dnsNames:
+    - server-explorer.miles.systems
+  issuerRef:
+    name: letsencrypt-miles-systems-dns-prod
+    kind: ClusterIssuer

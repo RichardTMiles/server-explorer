@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: server-explorer
+  namespace: server-explorer
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: server-explorer-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Server Explorer"
+    nginx.ingress.kubernetes.io/satisfy: any
+    nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,127.0.0.1/32
+spec:
+  tls:
+    - hosts:
+        - server-explorer.miles.systems
+      secretName: server-explorer-miles-systems-tls
+  rules:
+    - host: server-explorer.miles.systems
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: server-explorer
+                port:
+                  name: http

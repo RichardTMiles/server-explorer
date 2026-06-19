@@ -1,0 +1,34 @@
+{
+  "name": "server-explorer",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Standalone rack and server topology explorer for internal infrastructure.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "dev:server": "tsx watch server/index.ts",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
+    "start": "node dist/server/index.js"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "express": "^5.2.1",
+    "lucide-react": "^0.554.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "vite": "^8.0.16",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
