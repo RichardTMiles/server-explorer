@@ -131,7 +131,7 @@ const currentRackTopology: Topology = topologySchema.parse({
       managementUrl: "https://procurve.miles.systems",
       summary:
         "Live ProCurve SNMP view reported 9/24 ports up, one VLAN, and no LLDP neighbors. Server mappings are from ARP plus the switch MAC table.",
-      probe: { kind: "http", url: "http://192.168.1.193" },
+      probe: { kind: "http", url: "https://procurve.miles.systems/api/health" },
       tags: ["switch", "snmp", "procurve"],
       metrics: [
         { label: "Ports up", value: "9 / 24", tone: "good" },
