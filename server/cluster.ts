@@ -130,6 +130,10 @@ function addWarning(warnings: string[], message: string) {
   if (!warnings.includes(message)) warnings.push(message);
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function readFileIfExists(path: string) {
   try {
     return await fs.readFile(path, "utf8");
@@ -216,12 +220,21 @@ async function safeList(
     return [];
   }
 
-  try {
-    return await client.list(path);
-  } catch (error) {
-    addWarning(warnings, `${label}: ${error instanceof Error ? error.message : String(error)}`);
-    return [];
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await client.list(path);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (attempt < 3 && (message.includes("429 Too Many Requests") || message.includes("storage is (re)initializing"))) {
+        await sleep(350 * attempt);
+        continue;
+      }
+      addWarning(warnings, `${label}: ${message}`);
+      return [];
+    }
   }
+
+  return [];
 }
 
 async function prometheusQuery(query: string, warnings: string[], label: string) {
@@ -333,10 +346,6 @@ export async function loadClusterOverview() {
     cronJobs,
     virtualMachines,
     virtualMachineInstances,
-    longhornNodes,
-    longhornVolumes,
-    longhornReplicas,
-    longhornEngines,
     storageClasses,
   ] = await Promise.all([
     safeList(client, "/api/v1/namespaces", warnings, "namespaces"),
@@ -353,12 +362,13 @@ export async function loadClusterOverview() {
     safeList(client, "/apis/batch/v1/cronjobs", warnings, "cron jobs"),
     safeList(client, "/apis/kubevirt.io/v1/virtualmachines", warnings, "virtual machines"),
     safeList(client, "/apis/kubevirt.io/v1/virtualmachineinstances", warnings, "virtual machine instances"),
-    safeList(client, "/apis/longhorn.io/v1beta2/nodes", warnings, "longhorn nodes"),
-    safeList(client, "/apis/longhorn.io/v1beta2/volumes", warnings, "longhorn volumes"),
-    safeList(client, "/apis/longhorn.io/v1beta2/replicas", warnings, "longhorn replicas"),
-    safeList(client, "/apis/longhorn.io/v1beta2/engines", warnings, "longhorn engines"),
     safeList(client, "/apis/storage.k8s.io/v1/storageclasses", warnings, "storage classes"),
   ]);
+
+  const longhornNodes = await safeList(client, "/apis/longhorn.io/v1beta2/nodes", warnings, "longhorn nodes");
+  const longhornVolumes = await safeList(client, "/apis/longhorn.io/v1beta2/volumes", warnings, "longhorn volumes");
+  const longhornReplicas = await safeList(client, "/apis/longhorn.io/v1beta2/replicas", warnings, "longhorn replicas");
+  const longhornEngines = await safeList(client, "/apis/longhorn.io/v1beta2/engines", warnings, "longhorn engines");
 
   const [cpuUsageByInstance, memoryUsageByInstance, rootFsUsageByInstance, diskBusyByInstance] = await Promise.all([
     prometheusQuery('100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])))', warnings, "node cpu"),
@@ -372,7 +382,11 @@ export async function loadClusterOverview() {
       warnings,
       "node root filesystem"
     ),
-    prometheusQuery("100 * rate(node_disk_io_time_seconds_total[5m])", warnings, "node disk busy"),
+    prometheusQuery(
+      'max by (instance) (100 * rate(node_disk_io_time_seconds_total{device!~"loop.*|ram.*"}[5m]))',
+      warnings,
+      "node disk busy"
+    ),
   ]);
 
   const vmiByKey = new Map<string, AnyObject>(
