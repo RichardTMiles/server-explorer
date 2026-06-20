@@ -13,6 +13,16 @@ export const config = {
   topologyFile: process.env.TOPOLOGY_FILE?.trim() || undefined,
   probesEnabled: readBoolean(process.env.PROBES_ENABLED, false),
   probeTimeoutMs: Math.max(250, readNumber(process.env.PROBE_TIMEOUT_MS, 2500)),
+  clusterExplorerEnabled: readBoolean(process.env.CLUSTER_EXPLORER_ENABLED, true),
+  kubernetesApiUrl: process.env.KUBERNETES_API_URL?.trim() || undefined,
+  kubernetesToken: process.env.KUBERNETES_TOKEN?.trim() || undefined,
+  kubernetesTokenPath: process.env.KUBERNETES_TOKEN_PATH?.trim() || undefined,
+  kubernetesCaPath: process.env.KUBERNETES_CA_PATH?.trim() || undefined,
+  grafanaUrl:
+    process.env.GRAFANA_URL?.trim() || "http://rancher-monitoring-grafana.cattle-monitoring-system.svc",
+  prometheusUrl:
+    process.env.PROMETHEUS_URL?.trim() ||
+    "http://rancher-monitoring-prometheus.cattle-monitoring-system.svc:9090",
   frameAncestors:
     process.env.FRAME_ANCESTORS?.trim() ||
     "'self' https://spiders.assessorly.com https://spiders-staging.assessorly.com https://local.assessorly.com",

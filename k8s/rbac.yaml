@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: server-explorer
+  namespace: server-explorer
+  labels:
+    app.kubernetes.io/name: server-explorer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: server-explorer-readonly
+  labels:
+    app.kubernetes.io/name: server-explorer
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - nodes
+      - pods
+      - persistentvolumeclaims
+      - persistentvolumes
+      - services
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - daemonsets
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources:
+      - cronjobs
+      - jobs
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["kubevirt.io"]
+    resources:
+      - virtualmachineinstances
+      - virtualmachines
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["longhorn.io"]
+    resources:
+      - engines
+      - nodes
+      - replicas
+      - volumes
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources:
+      - storageclasses
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: server-explorer-readonly
+  labels:
+    app.kubernetes.io/name: server-explorer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: server-explorer-readonly
+subjects:
+  - kind: ServiceAccount
+    name: server-explorer
+    namespace: server-explorer

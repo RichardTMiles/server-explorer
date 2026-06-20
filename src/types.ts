@@ -90,3 +90,164 @@ export type ProbeResult = {
   status?: number;
   error?: string;
 };
+
+export type ClusterMetricSet = {
+  cpuUsagePct?: number;
+  memoryUsagePct?: number;
+  rootFsUsagePct?: number;
+  diskBusyPct?: number;
+};
+
+export type ClusterLonghornDisk = {
+  id: string;
+  node?: string;
+  path?: string;
+  allowScheduling: boolean;
+  ready: boolean;
+  schedulable: boolean;
+  storageMaximumBytes?: number;
+  storageAvailableBytes?: number;
+  scheduledReplicaBytes: number;
+  usedPct?: number;
+  scheduledPct?: number;
+  conditions: Array<{
+    type: string;
+    status: string;
+    reason?: string;
+    message?: string;
+  }>;
+};
+
+export type ClusterNode = {
+  name: string;
+  status: string;
+  roles: string[];
+  internalIp?: string;
+  osImage?: string;
+  kernelVersion?: string;
+  kubeletVersion?: string;
+  ageMs?: number;
+  metrics: ClusterMetricSet;
+  longhorn?: {
+    allowScheduling: boolean;
+    disks: ClusterLonghornDisk[];
+  };
+};
+
+export type ClusterPod = {
+  namespace: string;
+  name: string;
+  phase: string;
+  nodeName?: string;
+  podIp?: string;
+  ready: number;
+  total: number;
+  restarts: number;
+  owner?: string;
+  ageMs?: number;
+};
+
+export type ClusterService = {
+  namespace: string;
+  name: string;
+  type: string;
+  clusterIp?: string;
+  externalIps: unknown[];
+  ports: Array<{
+    name?: string;
+    port?: number;
+    protocol?: string;
+    nodePort?: number;
+  }>;
+  ageMs?: number;
+};
+
+export type ClusterWorkload = {
+  kind: string;
+  namespace: string;
+  name: string;
+  desired?: number;
+  ready?: number;
+  available?: number;
+  ageMs?: number;
+};
+
+export type ClusterVirtualMachine = {
+  namespace: string;
+  name: string;
+  running: boolean;
+  printableStatus: string;
+  nodeName?: string;
+  ip?: string;
+  cpu?: unknown;
+  memory?: unknown;
+  volumes: unknown[];
+  ageMs?: number;
+};
+
+export type ClusterLonghornVolume = {
+  namespace: string;
+  name: string;
+  state?: string;
+  robustness?: string;
+  nodeId?: string;
+  sizeBytes?: number;
+  actualSizeBytes?: number;
+  frontend?: string;
+  numberOfReplicas?: number;
+  ageMs?: number;
+};
+
+export type ClusterOverview = {
+  updatedAt: string;
+  source: {
+    kubernetes: string;
+    grafanaUrl: string;
+    prometheusUrl: string;
+    metrics: string;
+  };
+  warnings: string[];
+  summary: {
+    namespaces: number;
+    nodes: number;
+    pods: number;
+    runningPods: number;
+    services: number;
+    workloads: number;
+    virtualMachines: number;
+    runningVirtualMachines: number;
+    persistentVolumes: number;
+    persistentVolumeClaims: number;
+    storageClasses: number;
+    longhornVolumes: number;
+    healthyLonghornVolumes: number;
+    longhornReplicas: number;
+    longhornEngines: number;
+    longhornDisks: number;
+    readyLonghornDisks: number;
+  };
+  nodes: ClusterNode[];
+  pods: ClusterPod[];
+  services: ClusterService[];
+  workloads: ClusterWorkload[];
+  virtualMachines: ClusterVirtualMachine[];
+  storage: {
+    persistentVolumes: Array<Record<string, unknown>>;
+    persistentVolumeClaims: Array<Record<string, unknown>>;
+    storageClasses: Array<Record<string, unknown>>;
+    longhorn: {
+      nodes: Array<{
+        name: string;
+        allowScheduling: boolean;
+        disks: ClusterLonghornDisk[];
+      }>;
+      disks: ClusterLonghornDisk[];
+      volumes: ClusterLonghornVolume[];
+    };
+  };
+  totals: {
+    longhornStorageMaximumGiB?: number;
+    longhornStorageAvailableGiB?: number;
+    longhornScheduledReplicaGiB?: number;
+  };
+};

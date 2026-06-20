@@ -1,4 +1,4 @@
-import type { ProbeResult, Topology } from "./types";
+import type { ClusterOverview, ProbeResult, Topology } from "./types";
 
 async function readJson<T>(response: Response, fallback: string): Promise<T> {
   if (!response.ok) {
@@ -17,6 +17,10 @@ async function readJson<T>(response: Response, fallback: string): Promise<T> {
 
 export async function fetchTopology() {
   return readJson<Topology>(await fetch("/v1/topology"), "Failed to load topology.");
+}
+
+export async function fetchClusterOverview() {
+  return readJson<ClusterOverview>(await fetch("/v1/cluster"), "Failed to load cluster explorer.");
 }
 
 export async function probeDevice(deviceId: string) {

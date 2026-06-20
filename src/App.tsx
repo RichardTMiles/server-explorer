@@ -15,6 +15,7 @@ import {
   TerminalSquare,
 } from "lucide-react";
 import { fetchTopology, probeDevice } from "./api";
+import { ClusterView } from "./ClusterView";
 import type {
   DeviceCategory,
   DeviceStatus,
@@ -81,6 +82,7 @@ const defaultCategories = new Set<DeviceCategory>([
   "kvm",
   "utility",
 ]);
+type AppView = "rack" | "cluster";
 
 function formatUpdatedAt(value?: string) {
   if (!value) return "unknown";
@@ -609,6 +611,7 @@ function AlertFeed(props: { topology: Topology; onSelectDevice: (deviceId: strin
 }
 
 export function App() {
+  const [view, setView] = React.useState<AppView>("rack");
   const [topology, setTopology] = React.useState<Topology>();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string>();
@@ -675,20 +678,33 @@ export function App() {
   return (
     <div className="app-shell">
       <TopologyHeader topology={topology} loading={loading} error={error} onRefresh={() => void load()} />
-      <Filters
-        search={search}
-        setSearch={setSearch}
-        statuses={statuses}
-        setStatuses={setStatuses}
-        categories={categories}
-        setCategories={setCategories}
-        availableStatuses={availableStatuses.length ? availableStatuses : (Object.keys(STATUS_LABEL) as DeviceStatus[])}
-        availableCategories={
-          availableCategories.length ? availableCategories : (Object.keys(CATEGORY_LABEL) as DeviceCategory[])
-        }
-      />
+      <nav className="app-view-tabs" aria-label="Explorer views">
+        <button type="button" className={view === "rack" ? "active" : ""} onClick={() => setView("rack")}>
+          Rack
+        </button>
+        <button type="button" className={view === "cluster" ? "active" : ""} onClick={() => setView("cluster")}>
+          Cluster
+        </button>
+      </nav>
 
-      {topology ? (
+      {view === "rack" ? (
+        <Filters
+          search={search}
+          setSearch={setSearch}
+          statuses={statuses}
+          setStatuses={setStatuses}
+          categories={categories}
+          setCategories={setCategories}
+          availableStatuses={availableStatuses.length ? availableStatuses : (Object.keys(STATUS_LABEL) as DeviceStatus[])}
+          availableCategories={
+            availableCategories.length ? availableCategories : (Object.keys(CATEGORY_LABEL) as DeviceCategory[])
+          }
+        />
+      ) : null}
+
+      {view === "cluster" ? <ClusterView /> : null}
+
+      {view === "rack" && topology ? (
         <main className="workspace">
           <div className="left-rail">
             <DeviceList devices={visibleDevices} selectedDeviceId={selectedDeviceId} onSelectDevice={setSelectedDeviceId} />
@@ -709,13 +725,15 @@ export function App() {
             onProbe={(deviceId) => void runProbe(deviceId)}
           />
         </main>
-      ) : (
+      ) : null}
+
+      {view === "rack" && !topology ? (
         <main className="loading-state">
           <Server size={32} />
           <h2>{loading ? "Loading topology" : "Topology unavailable"}</h2>
           <p>{error ?? "Waiting for the server explorer API."}</p>
         </main>
-      )}
+      ) : null}
     </div>
   );
 }

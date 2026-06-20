@@ -15,6 +15,7 @@ spec:
       labels:
         app.kubernetes.io/name: server-explorer
     spec:
+      serviceAccountName: server-explorer
       containers:
         - name: server-explorer
           image: ghcr.io/richardtmiles/server-explorer:latest
@@ -27,6 +28,12 @@ spec:
               value: "3000"
             - name: PROBES_ENABLED
               value: "true"
+            - name: CLUSTER_EXPLORER_ENABLED
+              value: "true"
+            - name: GRAFANA_URL
+              value: "http://rancher-monitoring-grafana.cattle-monitoring-system.svc"
+            - name: PROMETHEUS_URL
+              value: "http://rancher-monitoring-prometheus.cattle-monitoring-system.svc:9090"
             - name: FRAME_ANCESTORS
               value: "'self' https://spiders.assessorly.com https://spiders-staging.assessorly.com https://local.assessorly.com"
           readinessProbe:

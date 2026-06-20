@@ -2,6 +2,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config } from "./env.js";
+import { loadClusterOverview } from "./cluster.js";
 import { findDevice, loadTopology } from "./topology.js";
 import { probeDevice } from "./probe.js";
 
@@ -39,12 +40,26 @@ app.get("/v1/healthz", (_req, res) => {
     service: "server-explorer",
     topologyFile: Boolean(config.topologyFile),
     probesEnabled: config.probesEnabled,
+    clusterExplorerEnabled: config.clusterExplorerEnabled,
   });
 });
 
 app.get("/v1/topology", async (_req, res, next) => {
   try {
     res.json(await loadTopology(config.topologyFile));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/v1/cluster", async (_req, res, next) => {
+  try {
+    if (!config.clusterExplorerEnabled) {
+      res.status(503).json({ error: "Cluster explorer is disabled for this deployment." });
+      return;
+    }
+
+    res.json(await loadClusterOverview());
   } catch (error) {
     next(error);
   }

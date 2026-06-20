@@ -7,6 +7,8 @@ Standalone rack and server topology explorer for internal infrastructure. It is 
 - Renders the current one-switch/four-server rack by default: ProCurve 2810-24G, `r640`, `r510b`, `r510a`, and `r710`.
 - Draws color-coded links for the configured physical/server paths.
 - Provides search, status/category filters, a details inspector, and a compact event/alert feed.
+- Adds a cluster explorer tab for Harvester/Kubernetes inventory: nodes, pods, services, workloads, KubeVirt VMs, PVs/PVCs, storage classes, Longhorn nodes, disks, volumes, replicas, and engines.
+- Shows realtime CPU, memory, filesystem, and disk-busy metrics through the Rancher/Grafana Prometheus datasource.
 - Loads topology from a private JSON file at runtime; without one it falls back to the current rack inventory.
 - Optionally runs simple HTTP/TCP reachability probes for configured targets.
 - Sets a `frame-ancestors` content security policy so the app can be embedded in Spiders.
@@ -32,6 +34,9 @@ PORT=3000
 TOPOLOGY_FILE=/absolute/path/to/topology.json
 PROBES_ENABLED=false
 PROBE_TIMEOUT_MS=2500
+CLUSTER_EXPLORER_ENABLED=true
+GRAFANA_URL=http://rancher-monitoring-grafana.cattle-monitoring-system.svc
+PROMETHEUS_URL=http://rancher-monitoring-prometheus.cattle-monitoring-system.svc:9090
 FRAME_ANCESTORS="'self' https://spiders.assessorly.com https://local.assessorly.com"
 ```
 
@@ -86,6 +91,8 @@ docker buildx build --platform linux/amd64 -t ghcr.io/richardtmiles/server-explo
 
 The checked-in manifests deploy a single pod and expose it internally through NodePort `30094`.
 They also define nginx ingress for `explorer.miles.systems` with TLS from cert-manager. `server-explorer.miles.systems` is kept as a compatibility alias. Private/LAN source ranges can open the app without a prompt; other source ranges must pass nginx Basic Auth through the `server-explorer-basic-auth` secret. The default deployment enables probes only for explicitly configured devices in the topology.
+
+The cluster explorer uses the `server-explorer` service account and a read-only ClusterRole. It can list Kubernetes, KubeVirt, Longhorn, and storage resources, but it does not read secrets or mutate cluster state.
 
 ```sh
 kubectl apply -k k8s
