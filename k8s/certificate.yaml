@@ -7,6 +7,7 @@ spec:
   secretName: server-explorer-miles-systems-tls
   dnsNames:
     - explorer.miles.systems
+    - procurve.miles.systems
     - server-explorer.miles.systems
   issuerRef:
     name: letsencrypt-miles-systems-dns-prod

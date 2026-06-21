@@ -28,6 +28,18 @@ spec:
               value: "3000"
             - name: PROBES_ENABLED
               value: "true"
+            - name: SWITCH_HOST
+              value: "192.168.1.193"
+            - name: SWITCH_LABEL
+              value: "HP ProCurve 2810-24G"
+            - name: ALLOW_SWITCH_WRITE_COMMANDS
+              value: "false"
+            - name: SNMP_COMMUNITY
+              valueFrom:
+                secretKeyRef:
+                  name: server-explorer-switch-secrets
+                  key: snmp-community
+                  optional: true
             - name: CLUSTER_EXPLORER_ENABLED
               value: "true"
             - name: GRAFANA_URL

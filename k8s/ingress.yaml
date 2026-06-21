@@ -14,6 +14,7 @@ spec:
   tls:
     - hosts:
         - explorer.miles.systems
+        - procurve.miles.systems
         - server-explorer.miles.systems
       secretName: server-explorer-miles-systems-tls
   rules:
@@ -28,6 +29,16 @@ spec:
                 port:
                   name: http
     - host: server-explorer.miles.systems
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: server-explorer
+                port:
+                  name: http
+    - host: procurve.miles.systems
       http:
         paths:
           - path: /

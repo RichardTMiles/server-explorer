@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { fetchTopology, probeDevice } from "./api";
 import { ClusterView } from "./ClusterView";
+import { SwitchView } from "./SwitchView";
 import type {
   DeviceCategory,
   DeviceStatus,
@@ -82,7 +83,7 @@ const defaultCategories = new Set<DeviceCategory>([
   "kvm",
   "utility",
 ]);
-type AppView = "rack" | "cluster";
+type AppView = "rack" | "cluster" | "switch";
 
 function formatUpdatedAt(value?: string) {
   if (!value) return "unknown";
@@ -685,6 +686,9 @@ export function App() {
         <button type="button" className={view === "cluster" ? "active" : ""} onClick={() => setView("cluster")}>
           Cluster
         </button>
+        <button type="button" className={view === "switch" ? "active" : ""} onClick={() => setView("switch")}>
+          Switch
+        </button>
       </nav>
 
       {view === "rack" ? (
@@ -703,6 +707,7 @@ export function App() {
       ) : null}
 
       {view === "cluster" ? <ClusterView /> : null}
+      {view === "switch" ? <SwitchView /> : null}
 
       {view === "rack" && topology ? (
         <main className="workspace">
