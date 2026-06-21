@@ -85,6 +85,10 @@ const defaultCategories = new Set<DeviceCategory>([
 ]);
 type AppView = "rack" | "cluster" | "switch";
 
+function defaultAppView(): AppView {
+  return window.location.hostname === "procurve.miles.systems" ? "switch" : "rack";
+}
+
 function formatUpdatedAt(value?: string) {
   if (!value) return "unknown";
   const date = new Date(value);
@@ -612,7 +616,7 @@ function AlertFeed(props: { topology: Topology; onSelectDevice: (deviceId: strin
 }
 
 export function App() {
-  const [view, setView] = React.useState<AppView>("rack");
+  const [view, setView] = React.useState<AppView>(() => defaultAppView());
   const [topology, setTopology] = React.useState<Topology>();
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string>();
